@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+      
+        #wrapper{
+            width:1500px;
+            height: 1270px;
+            border: 1px solid black;
+            margin: auto;
+            position: relative;
+
+        }
+        #start-area{
+            width:1500px;
+            height: 1270px;   
+            float: left;
+            position: relative;
+            
+            
+        }
+        #detail-area{
+            width: 100px;
+            height: 100%;
+            background-image: url("./images/stage.png");
+            float: left;
+            
+            
+        }
+        #detail-area input{
+            width: 98%;
+            height: 40px;
+            font-size: 30px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+            border: 1px solid black;
+        }
+        #stage{
+            width: 1400px;
+            height: 100%;
+            background-image: url("./images/main.png");
+            background-position: 100%;
+            overflow: hidden;
+            position: relative;
+            float: left;
+           
+
+        }
+        #check, #fail{
+            animation: fadein 2s;
+        }
+        @keyframes fadein {
+            from {
+            opacity: 0;
+            } to {
+            opacity: 1;
+            }
+        }
+
+    </style>
+    <script src="./js file/util.js"></script>
+    <script src="./js file/Stage.js"></script>
+    <script src="./js file/Mainbox.js"></script>
+    <script src="./js file/Chance.js"></script>
+    <script src="./js file/Enemy.js"></script>
+    <script>
+        let stage;
+
+        let mapArray=[
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1],
+        [1,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,2,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1],
+        [2,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,1,1,1],
+        [1,0,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1],
+        [1,1,1,0,1,0,0,0,0,1,1,1,1,0,1,1,0,1,1,1],
+        [1,0,0,0,1,0,1,1,0,0,0,0,0,0,1,1,0,0,0,1],
+        [1,0,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,0,1],
+        [1,0,0,0,0,0,1,1,2,1,1,0,0,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1],
+        [1,2,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1],
+        [1,1,1,0,1,1,0,1,0,1,1,1,1,1,1,1,1,0,1,1],
+        [1,1,1,0,1,1,1,1,0,1,1,0,0,0,0,1,1,0,1,1],
+        [0,0,0,0,1,1,1,1,0,1,0,0,1,1,0,0,0,0,1,1],
+        [3,1,1,0,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        ];
+
+        let meBox;
+        let blockArray=[];
+        let stepX=0; //좌 우 좌표
+        let stepY=0; //상 하 좌표
+        let mapPos;
+        let detailArea;
+        let enemyNameArray=["enemy1.png","enemy2.png","enemy3.png","enemy1.png","enemy2.png","enemy3.png","enemy1.png","enemy2.png","enemy3.png"];
+        let enemyArray=[];
+        let enemy;
+        let velY=-2; //적군속도제어
+        let chanceArray=[];
+        let chanceCnt = 0;
+        let gameflag=true;
+        let sec=60;
+        let min=0;
+        let itemArray=[];
+        let timeSI;
+        let startflag=true;
+        
+
+       function mapView(){   
+            for(let a=0; a<mapArray.length;a++){
+                let array=[];
+                for(let i=0; i<mapArray[a].length;i++ ){
+                    //container,x,y,width,height,type
+                    //type : 일반 땅, 벽, 아이템땅
+                    let floor = new Stage(stage,i*70,a*70,70,70,mapArray[a][i]);
+                    array.push(floor);
+                }
+                console.log(blockArray);
+                blockArray.push(array);
+            }
+       }
+       
+       function createEnemy(){
+        if(gameflag){
+            //container,src, x,y,width,height,velX,velY)
+            for(let i=0; i<enemyNameArray.length; i++){
+                enemy=new Enemy(stage,"./images/"+enemyNameArray[i],getRandomwithRange(100,1400),getRandomwithRange(1300,1700),40,40,0,velY);
+                enemyArray.push(enemy);
+            };
+            setTimeout("createEnemy()",2800);
+        }
+       }
+
+       function createMe(){
+        //container, x,y,width,height,velX,velY
+            meBox=new Mainbox(stage,0,0,72,72,0,0);
+       }
+
+
+       function moveX(n){
+            let result = mapArray[stepY][stepX+n];
+
+            if(result !=1){
+                stepX+=n;//좌표계산
+                meBox.stepX=stepX;
+            }
+        }
+        
+        function moveY(n){
+            let result = mapArray[stepY+n][stepX];
+            if(result !=1){
+                stepY+=n;//좌표계산
+                meBox.stepY=stepY;
+            }
+            
+            check();
+        }
+        
+        function keyEvent(e){
+            switch(e.keyCode){
+                case 37: moveX(-1);break; //좌
+                case 38: moveY(-1);break; //상
+                case 39: moveX(1);break; //우
+                case 40: moveY(1);break; //하
+            }          
+            
+            meBox.tick();
+            meBox.render();
+        }
+        
+        function chance(){
+            //(container,src, x,y,width,height,velX,velY)
+            for(let i=0; i<3; i++){
+                let chance=new Chance(detailArea,"./images/chance.png",detailArea,600+(80*i),80,80,0,0);
+                chanceArray.push(chance);
+                chanceCnt++;
+            }
+        }
+
+        function check(){
+                if(stepX==0 && stepY==16){
+                    let img=document.createElement("img");
+                    img.style.position="absolute";
+                    img.src="./images/clear.png";
+                    img.style.top=0+"px";
+                    img.style.left=0+"px";
+                    img.style.width=1400+"px";
+                    img.style.height=1270+"px";
+                    img.id = 'check';
+                    
+                    stage.appendChild(img);
+                    gameflag=false;
+                }
+        }
+
+        function fail(){
+            if(chanceArray.length==0 || sec==0){
+                let img=document.createElement("img");
+                img.style.position="absolute";
+                img.src="./images/fail.png";
+                img.style.top=0+"px";
+                img.style.left=0+"px";
+                img.style.width=1400+"px";
+                img.style.height=1270+"px";
+                img.id = 'fail';
+               stage.appendChild(img);
+                gameflag=false;
+            }
+        }
+        //let t_min=document.getElementById("t_min");
+
+        function timeOut(){
+            let t_sec=document.getElementById("t_sec");
+            sec--;
+            t_sec.value=sec;
+            if(sec >0){
+                setTimeout("timeOut()",1000);
+            }
+        }
+        
+        //원래 충돌 체크에서는 객체를 지웠었다.
+        //지금은 이미지를 바꾸고 객체의 type을 0으로 바꾼다.
+        //그리고 그 ItemArray에있는 값을 지운다
+
+        function createItem(){
+            //꽃 이미지를 밟으면 목숨배열에 1이 추가되도록 하고싶음
+            let result;
+            for(let i=0; i<itemArray.length; i++){    
+                result = (meBox,itemArray[i]);
+                if(itemArray[i].x == meBox.x && itemArray[i].y == meBox.y){
+                    //alert("밟았다");
+                    let chance=new Chance(detailArea,"./images/chance.png",detailArea,600+(chanceCnt*80),80,80,0,0);
+                    chanceArray.push(chance);
+                    chanceCnt++;
+                    itemArray[i].img.src="./images/floor2.png";
+                    itemArray[i].type=0;
+                    itemArray.splice([i],1);                        
+                }
+            }
+        }
+
+        function startArea(){
+            if(startflag){
+            }else{
+                startPage.style.display="none";
+            }
+        }
+
+
+        function gameLoop(){
+            if(gameflag){
+                for(let i=0; i<enemyArray.length; i++){
+                    enemyArray[i].tick();
+                    enemyArray[i].render();
+                }    
+                fail();
+            }
+            
+            //console.log("gameLoop called");
+            setTimeout("gameLoop()",10);
+            
+        }
+        
+        function init(){
+            stage=document.getElementById("stage");
+            detailArea=document.getElementById("detail-area");
+            
+            document.body.addEventListener("keydown", function(e){
+                console.log(e) //좌 37 하 40 우 39 상 38
+                keyEvent(e);
+                createItem();
+            });
+            
+           
+            timeOut();
+            mapView();
+            createEnemy();
+            createMe();            
+            chance();
+            gameLoop();
+
+            
+        }
+        
+        window.addEventListener("load", function(e){
+            startArea();
+            document.getElementById("start-area").addEventListener("click",function(){
+                startflag=false;
+                init();
+            });
+            
+        });
+
+    </script>
+</head>
+<body>
+    <div id="wrapper">
+        <div id="start-area">
+            
+            <div id="detail-area">
+                <input type="text" value="0" id="t_sec">
+            </div>
+            <div id="stage"></div>
+        </div>
+    </div>
+</body>
+</html>

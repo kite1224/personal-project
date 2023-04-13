@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #wrapper{
+            width: 1000px;
+            height: 750px;
+            position: absolute;
+            margin: auto;
+            border: 1px solid black;
+            overflow: hidden;
+            
+        }
+        #cover{
+            width: 1000px;
+            height: 750px;
+            position: absolute;
+            z-index: 1;
+        }
+        #hair-area{
+            width: 250px;
+            height: 250px;
+            background-image: url("images/bg1.png");
+            position: absolute;
+            float: left;
+            border: 1px solid black;
+           
+        }
+        #face-area{
+            width: 250px;
+            height: 250px;
+            background-image: url("images/bg2.png");
+            float: left;
+            position: absolute;
+            top:250px;
+            left: 0px;
+            border: 1px solid black;
+           
+        }
+        #shirt-area{
+            width: 250px;
+            height: 250px;
+            background-image: url("images/bg3.png");
+            float: left;
+            position: absolute;
+            top:500px;
+            border: 1px solid black;
+            
+        }
+        #body-area{
+            width: 750px;
+            height: 750px;
+            background-image: url(./images/main.png);
+            float: left;
+            position: relative;
+            left:250px;
+        }
+    </style>
+    <script src="./classes/GameObject.js"></script>
+    <script src="./classes/Hair.js"></script>
+    <script src="./classes/face.js"></script>
+    <script src="./classes/shirt.js"></script>
+
+    <script>
+        let cover;
+        let hairArea;
+        let faceArea;
+        let shirtArea;
+        let hairNameArray=["hair1.png","hair2.png","hair3.png","hair4.png","hair5.png","hair6.png","hair7.png","hair8.png"];
+        let hairArray=[];
+        let faceNameArray=["face1.png","face2.png","face3.png","face4.png","face5.png","face6.png","face7.png","face8.png","face9.png","face10.png"];
+        let faceArray=[];
+        let shirtNameArray=["shirt1.png","shirt2.png","shirt3.png","shirt4.png","shirt5.png","shirt6.png","shirt7.png","shirt8.png","shirt9.png"];
+        let shirtArray=[];
+
+        let flag1=true;
+        let flag2=true;
+        let flag3=true;
+
+        
+        function createHair(){
+            //1.헤어 칸에 헤어 이미지를 컨베이어로 붙이자.
+            //멈춤 버튼 추가하자
+            //container,src,x,y,width,height,velX,velY
+            for(let i=0; i<hairNameArray.length;i++){
+                let hair=new Hair(hairArea,"./images/"+hairNameArray[i],i*250,0,250,250,-22,0);
+                hairArray.push(hair);
+            }
+            //let st1=new Stopbt(hairArea,"./images/stop.png",200,200,25,25,0,0,1);
+        }
+        function createface(){
+            //2. 페이스칸에 표정 이미지를 돌리자
+            //멈춤 버튼 추가하자
+            for(let i=0; i<faceNameArray.length;i++){
+                let face=new Face(faceArea,"./images/"+faceNameArray[i],i*250,0,250,250,-15,0);
+                faceArray.push(face);
+            }
+            //let st2=new Stopbt(faceArea,"./images/stop.png",200,200,25,25,0,0,2);
+        }
+        function createshirt(){
+            //3.옷을 돌리자
+            //멈춤 버튼 추가하자
+            for(let i=0; i<shirtNameArray.length;i++){
+                let shirt=new Shirt(shirtArea,"./images/"+shirtNameArray[i],i*250,0,250,250,-18,0);
+                shirtArray.push(shirt);
+            }
+            //let st3=new Stopbt(shirtArea,"./images/stop.png",200,200,25,25,0,0,3);
+
+        }
+        
+        //헤어 이동
+        function move(){
+            if(flag1){
+                for(let i=0; i<hairArray.length;i++){
+                    hairArray[i].tick();
+                    hairArray[i].render();
+                }
+            }
+            if(flag2){
+                for(let i=0; i<faceArray.length;i++){
+                    faceArray[i].tick();
+                    faceArray[i].render();
+                }
+            }
+            if(flag3){
+                for(let i=0; i<shirtArray.length;i++){
+                    shirtArray[i].tick();
+                    shirtArray[i].render();
+                }    
+            }
+        }
+
+        //멈춘 사진 얼굴에 씌우기
+        function addImage(src){
+            let img=document.createElement("img");
+            img.src=src;
+            img.style.position="absolute";
+            img.style.top=0+"px";
+            img.style.left=0+"px";
+            img.style.width=750+"px";
+            img.style.height= 750+"px";
+
+            bodyArea.appendChild(img);
+
+        }
+
+        function startPage(e){
+            if(e.keyCode==32){   
+                cover.style.display="none";
+            }
+        }
+
+        
+        function gameLoop(){
+            // console.log("hi");
+            setTimeout("gameLoop()",10);
+            
+        }
+        
+        function init(){
+            hairArea=document.getElementById("hair-area");
+            faceArea=document.getElementById("face-area");
+            shirtArea=document.getElementById("shirt-area");
+            bodyArea=document.getElementById("body-area");
+            cover=document.getElementById("cover");
+
+            createHair();
+            createface();
+            createshirt();
+            
+            setInterval("move()",80);
+            gameLoop();
+
+
+            document.body.addEventListener("keydown",function(e){
+                startPage(e);  
+            });
+        }
+
+        window.addEventListener("load",function(){
+                init();
+        });
+    </script>
+</head>
+<body>
+    <img src="./images/bgimg.png" id="cover"> 
+    <div id="wrapper">
+        <div id="hair-area"></div>
+        <div id="face-area"></div>
+        <div id="shirt-area"></div>
+        <div id="body-area"></div>
+    </div>
+</body>
+</html>
